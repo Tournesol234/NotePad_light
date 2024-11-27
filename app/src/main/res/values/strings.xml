@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2007 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+  
+          http://www.apache.org/licenses/LICENSE-2.0
+  
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources>
+    <string name="app_name">NotePad</string>
+    <string name="live_folder_name">Notes</string>
+
+    <string name="title_edit_title">Note title:</string>
+    <string name="title_create">New note</string>
+    <string name="title_edit">Edit: %1$s</string>
+    <string name="title_notes_list">Notes</string>
+
+    <string name="menu_add">New note</string>
+    <string name="menu_save">Save</string>
+    <string name="menu_delete">Delete</string>
+    <string name="menu_open">Open</string>
+    <string name="menu_revert">Revert changes</string>
+    <string name="menu_copy">Copy</string>
+    <string name="menu_paste">Paste</string>
+
+    <string name="button_ok">OK</string>
+    <string name="text_title">Title:</string>
+
+    <string name="resolve_edit">Edit note</string>
+    <string name="resolve_title">Edit title</string>
+
+    <string name="error_title">Error</string>
+    <string name="error_message">Error loading note</string>
+    <string name="nothing_to_save">There is nothing to save</string>
+    <string name="search">Search</string>
+    <string name="menu_more">More options</string>
+    <color name="colorPrimary">#03A9F4</color>
+    <color name="colorBackground">#FFFFFF</color>
+
+
+
+    //溢出菜单的默认图标
+    <style name="OverflowButtonStyle" parent="@android:style/Widget.Holo.ActionButton.Overflow">
+<!--        <item name="android:src">@drawable/ic_menu_menu</item>  -->
+        <!-- 溢出菜单图标颜色-->
+        <item name="android:layout_width">4dp</item>  <!-- 设置宽度 -->
+        <item name="android:layout_height">4dp</item>  <!-- 设置高度 -->
+        <item name="android:tint">@color/colorBackground</item>  <!-- 设置颜色 -->
+    </style>
+
+
+    <!-- 在主题中引用 -->
+    <style name="base" parent="@android:style/Theme.Holo">
+        <!-- 在主题中引用溢出按钮的样式 -->
+        <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
+    </style>
+
+
+
+
+
+
+
+
+
+
+
+</resources>
