@@ -9,8 +9,7 @@ classpath请使用3.4.0:
 
 ##基本功能1：时间戳
 
-![image](https://github.com/user-attachments/assets/9b0ba41d-971c-473f-a413-97e2f421f00d)
-
+![img_5.png](img_5.png)
 # 1.在noteslist_item.xml中添加一个textview
     <TextView
     android:id="@+id/tv_date"
@@ -96,12 +95,64 @@ classpath请使用3.4.0:
         }
     }
 #  3.设置模糊查询的代码
+onCreateOptionsMenu中
 
-![image](https://github.com/user-attachments/assets/5ddf4262-14dc-47e4-b60a-9b51788a5f3e)
+    SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+    SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
 
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        //展开图标
+        searchView.setIconifiedByDefault(true);
+        //提交时被调用
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                //过滤显示的笔记
+                displayNotes(newText);
+                return true;
+            }
+        });
+
+// 过滤笔记
+private void displayNotes(String text) {
+// 构造查询条件和查询参数
+String selection = null;
+String[] selectionArgs = null;
+
+        if (!TextUtils.isEmpty(text)) {
+            // 按标题和内容进行模糊查询
+            selection = NotePad.Notes.COLUMN_NAME_TITLE + " LIKE ? OR " + NotePad.Notes.COLUMN_NAME_NOTE + " LIKE ?";
+            selectionArgs = new String[] { "%" + text + "%", "%" + text + "%" };
+        }
+
+        // 执行查询
+        Cursor cursor = getContentResolver().query(
+                NotePad.Notes.CONTENT_URI,        // 使用 NotePad 提供的默认内容 URI
+                PROJECTION,                       // 查询的列（ID, 标题，修改时间等）
+                selection,                        // 查询条件：如果有搜索文本，就用模糊查询条件
+                selectionArgs,                    // 查询条件的参数
+                NotePad.Notes.DEFAULT_SORT_ORDER  // 默认按修改时间排序
+        );
+
+        // 更新适配器的光标
+        MyCursorAdapter adapter = (MyCursorAdapter) getListAdapter();
+        if (adapter != null) {
+            adapter.changeCursor(cursor); // 更新 ListView 的数据
+        }
+    }
 #  4.provider里面的query方法再加上模糊查询内容和标题的代码
+    
+    if (!TextUtils.isEmpty(selection)) {
+    String queryText = selectionArgs[0]; // 获取用户输入的查询文本
+    selection = NotePad.Notes.COLUMN_NAME_TITLE + " LIKE ? OR " + NotePad.Notes.COLUMN_NAME_NOTE + " LIKE ?";
+    selectionArgs = new String[] { "%" + queryText + "%", "%" + queryText + "%" };
+    }
 
-![image](https://github.com/user-attachments/assets/0bc667b4-9717-4213-92e5-2a64c6ec9c14)
 
 ##拓展功能1：UI界面美化
 
