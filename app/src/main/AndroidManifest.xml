@@ -59,7 +59,6 @@
         </activity>
 
         <activity android:name="NoteEditor"
-            android:theme="@style/light"
             android:screenOrientation="sensor"
             android:configChanges="keyboardHidden|orientation"
         >
@@ -122,6 +121,11 @@
             </intent-filter>
         </activity>
 
+        <!--换背景色-->
+        <activity android:name="NoteColor"
+            android:theme="@android:style/Theme.Holo.Light.Dialog"
+            android:label="ChangeColor"
+            android:windowSoftInputMode="stateVisible"/>
     </application>
 
 </manifest>

@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -58,11 +59,12 @@ public class NoteEditor extends Activity {
      * Creates a projection that returns the note ID and the note contents.
      */
     private static final String[] PROJECTION =
-        new String[] {
-            NotePad.Notes._ID,
-            NotePad.Notes.COLUMN_NAME_TITLE,
-            NotePad.Notes.COLUMN_NAME_NOTE
-    };
+            new String[] {
+                    NotePad.Notes._ID,
+                    NotePad.Notes.COLUMN_NAME_TITLE,
+                    NotePad.Notes.COLUMN_NAME_NOTE,
+                    NotePad.Notes.COLUMN_NAME_BACK_COLOR
+            };
 
     // A label for the saved state of the activity
     private static final String ORIGINAL_CONTENT = "origContent";
@@ -250,57 +252,70 @@ public class NoteEditor extends Activity {
     protected void onResume() {
         super.onResume();
 
-        /*
-         * mCursor is initialized, since onCreate() always precedes onResume for any running
-         * process. This tests that it's not null, since it should always contain data.
-         */
+        // 确保 mCursor 不为空
         if (mCursor != null) {
-            // Requery in case something changed while paused (such as the title)
-            mCursor.requery();
+            // 确保 Cursor 已经正确获取数据并移到第一条记录
+            if (mCursor.moveToFirst()) {
+                // 根据当前状态设置标题
+                if (mState == STATE_EDIT) {
+                    int colTitleIndex = mCursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_TITLE);
+                    if (colTitleIndex != -1) {
+                        String title = mCursor.getString(colTitleIndex);
+                        Resources res = getResources();
+                        String text = String.format(res.getString(R.string.title_edit), title);
+                        setTitle(text);
+                    }
+                } else if (mState == STATE_INSERT) {
+                    setTitle(getText(R.string.title_create));
+                }
 
-            /* Moves to the first record. Always call moveToFirst() before accessing data in
-             * a Cursor for the first time. The semantics of using a Cursor are that when it is
-             * created, its internal index is pointing to a "place" immediately before the first
-             * record.
-             */
-            mCursor.moveToFirst();
+                // 获取笔记内容并显示
+                int colNoteIndex = mCursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_NOTE);
+                if (colNoteIndex != -1) {
+                    String note = mCursor.getString(colNoteIndex);
+                    mText.setTextKeepState(note); // 保持文本框状态
+                }
 
-            // Modifies the window title for the Activity according to the current Activity state.
-            if (mState == STATE_EDIT) {
-                // Set the title of the Activity to include the note title
-                int colTitleIndex = mCursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_TITLE);
-                String title = mCursor.getString(colTitleIndex);
-                Resources res = getResources();
-                String text = String.format(res.getString(R.string.title_edit), title);
-                setTitle(text);
-            // Sets the title to "create" for inserts
-            } else if (mState == STATE_INSERT) {
-                setTitle(getText(R.string.title_create));
+                // 存储原始内容
+                if (mOriginalContent == null) {
+                    mOriginalContent = mText.getText().toString();
+                }
+
+                // 读取背景颜色并设置背景
+                int colorIndex = mCursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_BACK_COLOR);
+                if (colorIndex != -1) {
+                    int colorCode = mCursor.getInt(colorIndex);
+
+                    // 设置背景颜色
+                    switch (colorCode) {
+                        case NotePad.Notes.DEFAULT_COLOR:
+                            mText.setBackgroundColor(Color.rgb(255, 255, 255)); // 白色
+                            break;
+                        case NotePad.Notes.YELLOW_COLOR:
+                            mText.setBackgroundColor(Color.rgb(247, 216, 133)); // 黄色
+                            break;
+                        case NotePad.Notes.BLUE_COLOR:
+                            mText.setBackgroundColor(Color.rgb(165, 202, 237)); // 蓝色
+                            break;
+                        case NotePad.Notes.GREEN_COLOR:
+                            mText.setBackgroundColor(Color.rgb(161, 214, 174)); // 绿色
+                            break;
+                        case NotePad.Notes.RED_COLOR:
+                            mText.setBackgroundColor(Color.rgb(244, 149, 133)); // 红色
+                            break;
+                        default:
+                            mText.setBackgroundColor(Color.rgb(255, 255, 255)); // 默认背景色为白色
+                            break;
+                    }
+                }
+
+            } else {
+                // 如果没有数据，则设置错误信息
+                setTitle(getText(R.string.error_title));
+                mText.setText(getText(R.string.error_message));
             }
-
-            /*
-             * onResume() may have been called after the Activity lost focus (was paused).
-             * The user was either editing or creating a note when the Activity paused.
-             * The Activity should re-display the text that had been retrieved previously, but
-             * it should not move the cursor. This helps the user to continue editing or entering.
-             */
-
-            // Gets the note text from the Cursor and puts it in the TextView, but doesn't change
-            // the text cursor's position.
-            int colNoteIndex = mCursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_NOTE);
-            String note = mCursor.getString(colNoteIndex);
-            mText.setTextKeepState(note);
-
-            // Stores the original note text, to allow the user to revert changes.
-            if (mOriginalContent == null) {
-                mOriginalContent = note;
-            }
-
-        /*
-         * Something is wrong. The Cursor should always contain data. Report an error in the
-         * note.
-         */
         } else {
+            // 如果 Cursor 为 null，则显示错误信息
             setTitle(getText(R.string.error_title));
             mText.setText(getText(R.string.error_message));
         }
@@ -337,41 +352,31 @@ public class NoteEditor extends Activity {
     protected void onPause() {
         super.onPause();
 
-        /*
-         * Tests to see that the query operation didn't fail (see onCreate()). The Cursor object
-         * will exist, even if no records were returned, unless the query failed because of some
-         * exception or error.
-         *
-         */
+        // 检查 Cursor 是否为空
         if (mCursor != null) {
 
-            // Get the current note text.
+            // 获取当前笔记文本
             String text = mText.getText().toString();
             int length = text.length();
 
             /*
-             * If the Activity is in the midst of finishing and there is no text in the current
-             * note, returns a result of CANCELED to the caller, and deletes the note. This is done
-             * even if the note was being edited, the assumption being that the user wanted to
-             * "clear out" (delete) the note.
+             * 如果 Activity 正在关闭并且当前笔记没有任何内容，则返回取消结果并删除笔记。
              */
             if (isFinishing() && (length == 0)) {
-                setResult(RESULT_CANCELED);
-                deleteNote();
-
+                setResult(RESULT_CANCELED);  // 返回取消结果
+                deleteNote();  // 删除笔记
+            } else {
                 /*
-                 * Writes the edits to the provider. The note has been edited if an existing note was
-                 * retrieved into the editor *or* if a new note was inserted. In the latter case,
-                 * onCreate() inserted a new empty note into the provider, and it is this new note
-                 * that is being edited.
+                 * 如果当前是编辑状态，更新笔记。
+                 * 如果是插入新笔记的状态，创建新的笔记。
                  */
-            } else if (mState == STATE_EDIT) {
-                // Creates a map to contain the new values for the columns
-                updateNote(text, null);
-            } else if (mState == STATE_INSERT) {
-                updateNote(text, text);
-                mState = STATE_EDIT;
-          }
+                if (mState == STATE_EDIT) {
+                    updateNote(text, null);  // 更新现有笔记
+                } else if (mState == STATE_INSERT) {
+                    updateNote(text, text);  // 插入新笔记
+                    mState = STATE_EDIT;  // 切换为编辑状态
+                }
+            }
         }
     }
 
@@ -446,10 +451,19 @@ public class NoteEditor extends Activity {
         case R.id.menu_revert:
             cancelNote();
             break;
+
+            case R.id.menu_color:
+                changeColor();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
-
+    //跳转改变颜色的activity，将uri信息传到新的activity
+    private final void changeColor() {
+        Intent intent = new Intent(null,mUri);
+        intent.setClass(NoteEditor.this,NoteColor.class);
+        NoteEditor.this.startActivity(intent);
+    }
 //BEGIN_INCLUDE(paste)
     /**
      * A helper method that replaces the note's data with the contents of the clipboard.

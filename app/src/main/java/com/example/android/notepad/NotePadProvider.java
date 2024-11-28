@@ -156,6 +156,10 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
         sNotesProjectionMap.put(
                 NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE,
                 NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE);
+//颜色
+        sNotesProjectionMap.put(
+                NotePad.Notes.COLUMN_NAME_BACK_COLOR,
+                NotePad.Notes.COLUMN_NAME_BACK_COLOR);
 
         /*
          * 创建并初始化一个用于处理实时文件夹的投影映射
@@ -189,12 +193,13 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
          */
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL("CREATE TABLE " + NotePad.Notes.TABLE_NAME + " ("
+            db.execSQL("CREATE TABLE " + NotePad.Notes.TABLE_NAME + "   ("
                     + NotePad.Notes._ID + " INTEGER PRIMARY KEY,"
                     + NotePad.Notes.COLUMN_NAME_TITLE + " TEXT,"
                     + NotePad.Notes.COLUMN_NAME_NOTE + " TEXT,"
                     + NotePad.Notes.COLUMN_NAME_CREATE_DATE + " INTEGER,"
-                    + NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE + " INTEGER"
+                    + NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE + " INTEGER,"
+                    + NotePad.Notes.COLUMN_NAME_BACK_COLOR + " INTEGER" //颜色
                     + ");");
         }
 
@@ -240,78 +245,58 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
 
-        // 构造一个新的查询构建器并设置其表名
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(NotePad.Notes.TABLE_NAME);
 
-        /**
-         * 根据 URI 模式匹配选择投影和调整 "where" 子句。
-         */
+        // 确保 projection 中包含所有需要的列
+        if (projection == null) {
+            projection = new String[] {
+                    NotePad.Notes._ID,               // 确保 ID 列包含在内
+                    NotePad.Notes.COLUMN_NAME_TITLE,  // 标题列
+                    NotePad.Notes.COLUMN_NAME_NOTE,   // 内容列
+                    NotePad.Notes.COLUMN_NAME_BACK_COLOR  // 背景颜色列
+            };
+        }
+
+        // 根据 URI 选择不同的查询模式
         switch (sUriMatcher.match(uri)) {
-            // 如果传入的 URI 是用于笔记的，选择 Notes 投影
             case NOTES:
                 qb.setProjectionMap(sNotesProjectionMap);
                 break;
 
-            /* 如果传入的 URI 是用于单个笔记，由其 ID 标识，选择笔记 ID 投影，并将 "_ID = <noteID>"
-             * 附加到 where 子句中，以便选择该单个笔记
-             */
             case NOTE_ID:
                 qb.setProjectionMap(sNotesProjectionMap);
-                qb.appendWhere(
-                        NotePad.Notes._ID +    // ID 列的名称
-                                "=" +
-                                // 从传入 URI 中提取的笔记 ID
-                                uri.getPathSegments().get(NotePad.Notes.NOTE_ID_PATH_POSITION));
+                qb.appendWhere(NotePad.Notes._ID + "=" + uri.getPathSegments().get(NotePad.Notes.NOTE_ID_PATH_POSITION));
                 break;
 
             case LIVE_FOLDER_NOTES:
-                // 如果传入的 URI 来自实时文件夹，选择实时文件夹投影。
                 qb.setProjectionMap(sLiveFolderProjectionMap);
                 break;
 
             default:
-                // 如果 URI 不匹配任何已知模式，则抛出异常。
-                throw new IllegalArgumentException("未知的 URI " + uri);
+                throw new IllegalArgumentException("Unknown URI " + uri);
         }
-//增加按内容查询course
+
+        // 添加查询条件（按内容模糊查询）
         if (!TextUtils.isEmpty(selection)) {
-            selection = NotePad.Notes.COLUMN_NAME_TITLE + " LIKE ? OR " + NotePad.Notes.COLUMN_NAME_NOTE + " LIKE ?";
             String queryText = selectionArgs[0]; // 获取用户输入的查询文本
+            selection = NotePad.Notes.COLUMN_NAME_TITLE + " LIKE ? OR " + NotePad.Notes.COLUMN_NAME_NOTE + " LIKE ?";
             selectionArgs = new String[] { "%" + queryText + "%", "%" + queryText + "%" };
         }
 
+        // 设置排序顺序
+        String orderBy = TextUtils.isEmpty(sortOrder) ? NotePad.Notes.DEFAULT_SORT_ORDER : sortOrder;
 
-        String orderBy;
-        // 如果未指定排序顺序，使用默认排序顺序
-        if (TextUtils.isEmpty(sortOrder)) {
-            orderBy = NotePad.Notes.DEFAULT_SORT_ORDER;
-        } else {
-            // 否则，使用传入的排序顺序
-            orderBy = sortOrder;
-        }
-
-        // 以“只读”模式打开数据库对象，因为不需要进行写操作。
+        // 执行查询
         SQLiteDatabase db = mOpenHelper.getReadableDatabase();
+        Cursor c = qb.query(db, projection, selection, selectionArgs, null, null, orderBy);
 
-        /*
-         * 执行查询。如果尝试读取数据库时没有问题，则返回一个 Cursor 对象；否则，cursor 变量为 null。
-         * 如果没有选择任何记录，则 Cursor 对象为空，Cursor.getCount() 返回 0。
-         */
-        Cursor c = qb.query(
-                db,            // 要查询的数据库
-                projection,    // 查询中返回的列
-                selection,     // where 子句的列
-                selectionArgs, // where 子句的值
-                null,          // 不对行进行分组
-                null,          // 不按行组进行过滤
-                orderBy        // 排序顺序
-        );
-
-        // 告诉 Cursor 观察哪个 URI，以便在源数据发生变化时知道
+        // 设置通知 URI
         c.setNotificationUri(getContext().getContentResolver(), uri);
         return c;
     }
+
+
 
 
     /**
@@ -515,6 +500,10 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
         // 如果值映射中不包含笔记文本，则将其设置为空字符串。
         if (values.containsKey(NotePad.Notes.COLUMN_NAME_NOTE) == false) {
             values.put(NotePad.Notes.COLUMN_NAME_NOTE, "");
+        }
+// 背景默认为白色
+        if (values.containsKey(NotePad.Notes.COLUMN_NAME_BACK_COLOR) == false) {
+            values.put(NotePad.Notes.COLUMN_NAME_BACK_COLOR, NotePad.Notes.DEFAULT_COLOR);
         }
 
         // 以“写入”模式打开数据库对象。

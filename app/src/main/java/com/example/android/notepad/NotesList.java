@@ -41,7 +41,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SearchView;
-import android.widget.SimpleCursorAdapter;
+//import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -76,10 +76,12 @@ public class NotesList extends ListActivity {
     /**
      * 光标适配器需要的列
      */
-    private static final String[] PROJECTION = new String[]{
+    private static final String[] PROJECTION = new String[] {
             NotePad.Notes._ID, // 0
             NotePad.Notes.COLUMN_NAME_TITLE, // 1
-            NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE,
+            //扩展 显示时间 颜色
+            NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE, // 2
+            NotePad.Notes.COLUMN_NAME_BACK_COLOR,
     };
 
     /**
@@ -142,43 +144,52 @@ public class NotesList extends ListActivity {
          */
 
         // 初始化为标题列，光标列名称显示在视图中的名称
-        String[] dataColumns = {NotePad.Notes.COLUMN_NAME_TITLE,NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE};
+        String[] dataColumns = {NotePad.Notes.COLUMN_NAME_TITLE,NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE,NotePad.Notes.COLUMN_NAME_BACK_COLOR};
 
         // 初始化为 noteslist_item.xml 中 TextView 的视图 ID，
         // 用于显示光标列。//
         //
         int[] viewIDs = {R.id.tv_title,R.id.tv_date};
 
-        // 为 ListView 创建基础适配器。
-        SimpleCursorAdapter adapter
-                = new SimpleCursorAdapter(
-                this,                             // ListView 的上下文
-                R.layout.noteslist_item,          // 指向列表项的 XML 文件
-                cursor,                           // 用于获取项目的光标
+//        // 为 ListView 创建基础适配器。
+//        SimpleCursorAdapter adapter
+//                = new SimpleCursorAdapter(
+//                this,                             // ListView 的上下文
+//                R.layout.noteslist_item,          // 指向列表项的 XML 文件
+//                cursor,                           // 用于获取项目的光标
+//                dataColumns,
+//                viewIDs
+//        );
+
+        //
+      MyCursorAdapter  adapter = new MyCursorAdapter(
+                this,
+                R.layout.noteslist_item,
+                cursor,
                 dataColumns,
                 viewIDs
         );
 // 自定义格式化时间
         //
         //
-        adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-            @Override
-            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                if (view.getId() == R.id.tv_date) {
-
-                    long timestamp = cursor.getLong(columnIndex);
-
-                    // 格式化时间
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-                    String formattedDate = sdf.format(new Date(timestamp));
-
-
-                    ((TextView) view).setText(formattedDate);
-                    return true;
-                }
-                return false;
-            }
-        });
+//        adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+//            @Override
+//            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+//                if (view.getId() == R.id.tv_date) {
+//
+//                    long timestamp = cursor.getLong(columnIndex);
+//
+//                    // 格式化时间
+//                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+//                    String formattedDate = sdf.format(new Date(timestamp));
+//
+//
+//                    ((TextView) view).setText(formattedDate);
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
         // 设置 ListView 的适配器为刚刚创建的光标适配器。
         setListAdapter(adapter);
 
@@ -288,7 +299,7 @@ public class NotesList extends ListActivity {
         );
 
         // 更新适配器的光标
-        SimpleCursorAdapter adapter = (SimpleCursorAdapter) getListAdapter();
+        MyCursorAdapter adapter = (MyCursorAdapter) getListAdapter();
         if (adapter != null) {
             adapter.changeCursor(cursor); // 更新 ListView 的数据
         }
@@ -399,15 +410,15 @@ public class NotesList extends ListActivity {
                 startActivity(new Intent(Intent.ACTION_PASTE, getIntent().getData()));
                 return true;
             case R.id.theme:
-                // 切换主题
-                toggleTheme(item);  // 传入菜单项来切换图标
+
+                toggleTheme(item);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
     private void toggleTheme(MenuItem item) {
-        // 获取当前主题
+
         int currentTheme = getSharedPreferences("prefs", MODE_PRIVATE)
                 .getInt("current_theme", R.style.light);  // 默认亮色主题
 
@@ -427,7 +438,6 @@ public class NotesList extends ListActivity {
                     .apply();
         }
 
-        // 重新创建活动来应用新的主题
         recreate();
     }
 
