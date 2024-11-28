@@ -92,8 +92,13 @@ public class NotesList extends ListActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        int currentTheme = getSharedPreferences("prefs", MODE_PRIVATE)
+                .getInt("current_theme", R.style.light); // 默认亮色主题
+        setTheme(currentTheme); // 在 setContentView 之前设置主题
         super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.noteslist_item);
         // 用户不需要按住键来使用菜单快捷键。
         setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
 
@@ -243,7 +248,21 @@ public class NotesList extends ListActivity {
         menu.addIntentOptions(Menu.CATEGORY_ALTERNATIVE, 0, 0,
                 new ComponentName(this, NotesList.class), null, intent, 0, null);
 
+
+        MenuItem themeItem = menu.findItem(R.id.theme);
+        // 根据当前主题设置图标
+        int currentTheme = getSharedPreferences("prefs", MODE_PRIVATE)
+                .getInt("current_theme", R.style.light); // 默认亮色主题
+
+        if (currentTheme == R.style.light) {
+            themeItem.setIcon(R.drawable.ic_menu_dark);  // 设置月亮图标（亮色模式）
+        } else {
+            themeItem.setIcon(R.drawable.ic_menu_light);   // 设置太阳图标（暗色模式）
+        }
+
+
         return super.onCreateOptionsMenu(menu);
+
 
     }
 
@@ -379,9 +398,37 @@ public class NotesList extends ListActivity {
                  */
                 startActivity(new Intent(Intent.ACTION_PASTE, getIntent().getData()));
                 return true;
+            case R.id.theme:
+                // 切换主题
+                toggleTheme(item);  // 传入菜单项来切换图标
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+    private void toggleTheme(MenuItem item) {
+        // 获取当前主题
+        int currentTheme = getSharedPreferences("prefs", MODE_PRIVATE)
+                .getInt("current_theme", R.style.light);  // 默认亮色主题
+
+        if (currentTheme == R.style.light) {
+            // 切换为暗色主题
+            setTheme(R.style.dark);
+            item.setIcon(R.drawable.ic_menu_light);  // 设置太阳图标
+            getSharedPreferences("prefs", MODE_PRIVATE).edit()
+                    .putInt("current_theme", R.style.dark)
+                    .apply();
+        } else {
+            // 切换为亮色主题
+            setTheme(R.style.light);
+            item.setIcon(R.drawable.ic_menu_dark);  // 设置月亮图标
+            getSharedPreferences("prefs", MODE_PRIVATE).edit()
+                    .putInt("current_theme", R.style.light)
+                    .apply();
+        }
+
+        // 重新创建活动来应用新的主题
+        recreate();
     }
 
     /**

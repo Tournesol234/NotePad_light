@@ -2,14 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
 
-
-
-
+    <item
+        android:id="@+id/theme"
+        android:title="切换主题"
+        android:icon="@drawable/ic_menu_dark"
+    android:showAsAction="always"/>
     <item
         android:id="@+id/search"
         android:title="@string/search"
         android:icon="@drawable/ic_menu_search"
-        android:showAsAction="ifRoom|collapseActionView"
+        android:showAsAction="always"
         android:actionViewClass="android.widget.SearchView" />
     <!--  This is our one standard application action (creating a new note). -->
     <item android:id="@+id/menu_add"
@@ -20,7 +22,7 @@
     <!--  If there is currently data in the clipboard, this adds a PASTE menu item to the menu
           so that the user can paste in the data.. -->
     <item android:id="@+id/menu_paste"
-          android:icon="@drawable/ic_menu_compose"
+          android:icon="@drawable/ic_menu_paste"
           android:title="@string/menu_paste"
           android:alphabeticShortcut='p' />
 </menu>

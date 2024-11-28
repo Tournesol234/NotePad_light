@@ -28,7 +28,7 @@
     <application
         android:icon="@drawable/app_notes"
         android:label="@string/app_name"
-        android:theme="@style/base"
+
         >
 
         <provider android:name="NotePadProvider"
@@ -59,7 +59,7 @@
         </activity>
 
         <activity android:name="NoteEditor"
-
+            android:theme="@style/light"
             android:screenOrientation="sensor"
             android:configChanges="keyboardHidden|orientation"
         >

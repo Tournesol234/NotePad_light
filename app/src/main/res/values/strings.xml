@@ -53,7 +53,7 @@
         <!-- 溢出菜单图标颜色-->
         <item name="android:layout_width">4dp</item>  <!-- 设置宽度 -->
         <item name="android:layout_height">4dp</item>  <!-- 设置高度 -->
-        <item name="android:tint">@color/colorBackground</item>  <!-- 设置颜色 -->
+        <item name="android:tint">@color/colorPrimary</item>  <!-- 设置颜色 -->
     </style>
 
 
@@ -63,7 +63,16 @@
         <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
     </style>
 
+    <!-- 在主题中引用 -->
+    <style name="light" parent="@android:style/Theme.Holo.Light">
+        <!-- 在主题中引用溢出按钮的样式 -->
+        <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
+    </style>
 
+    <style name="dark" parent="@android:style/Theme.Holo">
+        <!-- 在主题中引用溢出按钮的样式 -->
+        <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
+    </style>
 
 
 
