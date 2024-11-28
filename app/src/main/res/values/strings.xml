@@ -43,6 +43,11 @@
     <string name="search">Search</string>
     <string name="menu_more">More options</string>
     <string name="menu_color">Color\n</string>
+    <string name="menu_sort">Sort</string>
+    <string name="menu_sort1">创建时间</string>
+    <string name="menu_sort2">修改时间</string>
+    <string name="menu_sort3">颜色</string>
+
     <color name="colorPrimary">#03A9F4</color>
     <color name="colorBackground">#FFFFFF</color>
 
@@ -64,14 +69,13 @@
         <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
     </style>
 
-    <!-- 在主题中引用 -->
     <style name="light" parent="@android:style/Theme.Holo.Light">
-        <!-- 在主题中引用溢出按钮的样式 -->
+
         <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
     </style>
 
     <style name="dark" parent="@android:style/Theme.Holo">
-        <!-- 在主题中引用溢出按钮的样式 -->
+
         <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
     </style>
 
