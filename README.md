@@ -10,6 +10,7 @@ classpath请使用3.4.0:
 ##基本功能1：时间戳
 
 ![img_5.png](img_5.png)
+
 # 1.在noteslist_item.xml中添加一个textview
     <TextView
     android:id="@+id/tv_date"
@@ -54,6 +55,7 @@ classpath请使用3.4.0:
             }
         });```
 ##基本功能2：搜索（通过标题和内容）
+
 ![img_10.png](img_10.png)
 
 # 1.list_options_menu.xml中新添加一个item
@@ -233,6 +235,7 @@ onCreateOptionsMenu中
 
         recreate();
     }
+    
 ![img_6.png](img_6.png)
 ![img_7.png](img_7.png)
 
@@ -628,13 +631,18 @@ onsume中添加
     private int[] viewIDs = { R.id.tv_title , R.id.tv_date };
 
 样式
+
 ![img_1.png](img_1.png)
 
+
 按创建时间排序
+
 ![img_2.png](img_2.png)
 
 修改时间
+
 ![img_3.png](img_3.png)
 
 颜色
+
 ![img_4.png](img_4.png)
