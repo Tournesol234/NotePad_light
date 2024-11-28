@@ -51,31 +51,31 @@ classpath请使用3.4.0:
 
 ##拓展功能1：UI界面美化
 
-        1.设计溢出菜单的颜色
+        #1.设计溢出菜单的颜色
 
            ![image](https://github.com/user-attachments/assets/e28a5678-60f5-49ad-b184-a0c82fbe33ac)
 
-        2.设计亮暗两个布局，并分别在主题中引用溢出菜单样式
+       # 2.设计亮暗两个布局，并分别在主题中引用溢出菜单样式
         
         ![image](https://github.com/user-attachments/assets/cd9f6450-0027-4be4-8572-fab23f2fd44d)
 
-        3.设计主题菜单
+        #3.设计主题菜单
 
         ![image](https://github.com/user-attachments/assets/ad7c0e0a-817c-4512-8409-d134ec23f856)
 
-        4.在OnCreate里设置默认主题等
+       # 4.在OnCreate里设置默认主题等
         
         ![image](https://github.com/user-attachments/assets/89d2ef04-d1ea-4126-9286-82e189e9c02b)
 
-        5.在OncreateOptionMenu里设置图标切换
+      #  5.在OncreateOptionMenu里设置图标切换
 
         ![image](https://github.com/user-attachments/assets/edb91fc2-a947-4438-b23b-277c877af8bb)
 
-        6.onOptionsItemSelected添加点击事件
+       # 6.onOptionsItemSelected添加点击事件
 
         ![image](https://github.com/user-attachments/assets/18e96a64-34ae-4839-8ed5-9c99547d3b2d)
 
-        7.主题切换逻辑
+       # 7.主题切换逻辑
 
         ![Uploading image.png…]()
 
