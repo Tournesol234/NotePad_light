@@ -50,3 +50,18 @@ classpath请使用3.4.0:
  ![image](https://github.com/user-attachments/assets/0bc667b4-9717-4213-92e5-2a64c6ec9c14)
 
 ##拓展功能1：UI界面美化
+
+        1.设计溢出菜单的颜色
+
+           ![image](https://github.com/user-attachments/assets/e28a5678-60f5-49ad-b184-a0c82fbe33ac)
+
+        2.设计亮暗两个布局，并分别在主题中引用溢出菜单样式
+        
+        ![image](https://github.com/user-attachments/assets/cd9f6450-0027-4be4-8572-fab23f2fd44d)
+
+        3.设计主题菜单
+
+        ![image](https://github.com/user-attachments/assets/ad7c0e0a-817c-4512-8409-d134ec23f856)
+
+        
+
