@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/e98f6fae-1444-4bed-bc45-c5b036c2fda1)## 配置详情
+## 配置详情
 
 ### 1. `使用JDK9的版本`
 
@@ -54,10 +54,7 @@ classpath请使用3.4.0:
             }
         });```
 ##基本功能2：搜索（通过标题和内容）
-
-![image](https://github.com/user-attachments/assets/45e2b0aa-9e55-4dde-af0d-9f33bb4f8f9f)
-
-![image](https://github.com/user-attachments/assets/75ecbee6-38b4-47b4-bc9c-ace7e5f363d9)
+![img_10.png](img_10.png)
 
 # 1.list_options_menu.xml中新添加一个item
     <item
@@ -119,10 +116,11 @@ onCreateOptionsMenu中
         });
 
 // 过滤笔记
-private void displayNotes(String text) {
-// 构造查询条件和查询参数
-String selection = null;
-String[] selectionArgs = null;
+
+    private void displayNotes(String text) {
+    // 构造查询条件和查询参数
+    String selection = null;
+    String[] selectionArgs = null;
 
         if (!TextUtils.isEmpty(text)) {
             // 按标题和内容进行模糊查询
@@ -235,9 +233,8 @@ String[] selectionArgs = null;
 
         recreate();
     }
-
-![image](https://github.com/user-attachments/assets/bedeb714-0cbe-426b-9fb8-85689de5fd48)
-![image](https://github.com/user-attachments/assets/413f66b6-0a55-4469-ac4c-89c87dd937b4)
+![img_6.png](img_6.png)
+![img_7.png](img_7.png)
 
 # 7契约类添加颜色字段
        
@@ -541,10 +538,9 @@ onsume中添加
     android:theme="@android:style/Theme.Holo.Light.Dialog"
     android:label="ChangeColor"
     android:windowSoftInputMode="stateVisible"/>
+![img_9.png](img_9.png)
 
-![image](https://github.com/user-attachments/assets/cbb23643-8b86-4e1f-8e31-87615b179e0e)
-
-![image](https://github.com/user-attachments/assets/6ba77bba-eafd-42c0-af0c-489bdcc87aa0)
+![img_8.png](img_8.png)
 
 ## 拓展功能2 排序
 
