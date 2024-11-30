@@ -7,10 +7,10 @@
 ### 3.  `build.gradle(notepad)`
 classpath请使用3.4.0:
 
-##基本功能1：时间戳
+# 基本功能1：时间戳
 
 ![img_5.png](img_5.png)
-# 1.在noteslist_item.xml中添加一个textview
+## 1.在 noteslist_item.xml 文件中添加一个 TextView，用于显示时间戳
     <TextView
     android:id="@+id/tv_date"
     android:layout_width="wrap_content"
@@ -20,7 +20,7 @@ classpath请使用3.4.0:
     android:layout_marginBottom="16dp"
     />
 
-# 2.在NoteList中添加修改时间的列
+## 2.在 NoteList 中添加修改时间的列，这样可以从数据库中查询到修改时间（时间戳）
 
       private static final String[] PROJECTION = new String[] {
             NotePad.Notes._ID, // 0
@@ -28,13 +28,13 @@ classpath请使用3.4.0:
             NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE, // 2
     };
 
-# 3.OnCreate方法中，初始化id
+## 3.在 onCreate 方法中，初始化需要绑定的视图 ID，包括标题和时间戳 TextView
 
     int[] viewIDs = {R.id.tv_title,R.id.tv_date};  
 
 ![image](https://github.com/user-attachments/assets/32cba258-00fd-40dc-b105-31fd45fe4db2)
 
-# 4.创建个格式化时间的方法
+## 4.创建格式化时间的方法，使用 SimpleCursorAdapter 和 ViewBinder 来绑定视图数据
 ``adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
 `            @Override
           public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
@@ -53,10 +53,10 @@ classpath请使用3.4.0:
                  return false;
             }
         });```
-##基本功能2：搜索（通过标题和内容）
+# 基本功能2：搜索（通过标题和内容）
 ![img_10.png](img_10.png)
 
-# 1.list_options_menu.xml中新添加一个item
+## 1.在 list_options_menu.xml 中新增一个菜单项，用于启用搜索功能
     <item
         android:id="@+id/search"
         android:title="@string/search"
@@ -64,34 +64,7 @@ classpath请使用3.4.0:
         android:showAsAction="always"
         android:actionViewClass="android.widget.SearchView" />
 
-# 2.OnCreateOptionMenu 中编写搜索监听器并调用query的方法
-    private void displayNotes(String text) {
-    // 构造查询条件和查询参数
-    String selection = null;
-    String[] selectionArgs = null;
-
-        if (!TextUtils.isEmpty(text)) {
-            // 按标题和内容进行模糊查询
-            selection = NotePad.Notes.COLUMN_NAME_TITLE + " LIKE ? OR " + NotePad.Notes.COLUMN_NAME_NOTE + " LIKE ?";
-            selectionArgs = new String[] { "%" + text + "%", "%" + text + "%" };
-        }
-
-        // 执行查询
-        Cursor cursor = getContentResolver().query(
-                NotePad.Notes.CONTENT_URI,        // 使用 NotePad 提供的默认内容 URI
-                PROJECTION,                       // 查询的列（ID, 标题，修改时间等）
-                selection,                        // 查询条件：如果有搜索文本，就用模糊查询条件
-                selectionArgs,                    // 查询条件的参数
-                NotePad.Notes.DEFAULT_SORT_ORDER  // 默认按修改时间排序
-        );
-
-        // 更新适配器的光标
-        MyCursorAdapter adapter = (MyCursorAdapter) getListAdapter();
-        if (adapter != null) {
-            adapter.changeCursor(cursor); // 更新 ListView 的数据
-        }
-    }
-#  3.设置模糊查询的代码
+## 2.在 onCreateOptionsMenu 方法中，添加一个搜索监听器，处理用户的搜索输入并调用查询方法
 onCreateOptionsMenu中
 
     SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -115,7 +88,7 @@ onCreateOptionsMenu中
             }
         });
 
-// 过滤笔记
+## 3.过滤显示笔记的方法，执行数据库查询，筛选符合条件的笔记
 
     private void displayNotes(String text) {
     // 构造查询条件和查询参数
@@ -143,7 +116,7 @@ onCreateOptionsMenu中
             adapter.changeCursor(cursor); // 更新 ListView 的数据
         }
     }
-#  4.provider里面的query方法再加上模糊查询内容和标题的代码
+##  4.在 Provider 中的 query 方法里加上模糊查询，处理内容和标题的匹配
     
     if (!TextUtils.isEmpty(selection)) {
     String queryText = selectionArgs[0]; // 获取用户输入的查询文本
@@ -152,9 +125,9 @@ onCreateOptionsMenu中
     }
 
 
-##拓展功能1：UI界面美化
+# 拓展功能1：UI界面美化
 
-# 1.设计溢出菜单的颜色
+## 1.在 styles.xml 中定义溢出菜单的颜色和样式
 
      <style name="OverflowButtonStyle" parent="@android:style/Widget.Holo.ActionButton.Overflow">
     <!--        <item name="android:src">@drawable/ic_menu_menu</item>  -->
@@ -165,7 +138,7 @@ onCreateOptionsMenu中
         </style>
 
 
-# 2.设计亮暗两个布局，并分别在主题中引用溢出菜单样式
+## 2.定义亮色和暗色主题样式，分别在主题中引用溢出菜单样式
 
     <style name="light" parent="@android:style/Theme.Holo.Light">
       
@@ -177,21 +150,21 @@ onCreateOptionsMenu中
         <item name="android:actionOverflowButtonStyle">@style/OverflowButtonStyle</item>
     </style>
 
-# 3.设计主题菜单
+## 3.在菜单文件中添加主题切换项
     <item
         android:id="@+id/theme"
         android:title="切换主题"
         android:icon="@drawable/ic_menu_dark"
     android:showAsAction="always"/>
 
-# 4.在OnCreate里设置默认主题等
+## 4.在OnCreate里设置默认主题等
     int currentTheme = getSharedPreferences("prefs", MODE_PRIVATE)
     .getInt("current_theme", R.style.light); // 默认亮色主题
     setTheme(currentTheme); // 在 setContentView 之前设置主题
     super.onCreate(savedInstanceState);
     
             setContentView(R.layout.noteslist_item);
-#  5.在OncreateOptionMenu里设置图标切换
+##  5.在 onCreateOptionsMenu 中设置图标切换，根据当前主题设置不同的图标
     MenuItem themeItem = menu.findItem(R.id.theme);
     // 根据当前主题设置图标
     int currentTheme = getSharedPreferences("prefs", MODE_PRIVATE)
@@ -202,7 +175,7 @@ onCreateOptionsMenu中
         } else {
             themeItem.setIcon(R.drawable.ic_menu_light);   // 设置太阳图标（暗色模式）
         }
-# 6.onOptionsItemSelected添加点击事件    
+## 6.onOptionsItemSelected添加点击事件，处理菜单项点击事件，切换主题    
 
           case R.id.theme:
                 
@@ -236,7 +209,9 @@ onCreateOptionsMenu中
 ![img_6.png](img_6.png)
 ![img_7.png](img_7.png)
 
-# 7契约类添加颜色字段
+# 7添加颜色
+
+在 NotePad 契约类中定义了一个新的字段 COLUMN_NAME_BACK_COLOR，用于存储每个笔记的背景颜色
        
     public static final String COLUMN_NAME_BACK_COLOR = "color";
         
@@ -262,7 +237,9 @@ onCreateOptionsMenu中
     public static final int GREEN_COLOR = 3; //绿
     public static final int RED_COLOR = 4; //红
 
-由于数据库中多了一个字段，所以要在NotePadProvider中添加对其相应的处理，static{}中：
+由于数据库中多了一个字段，所以要在NotePadProvider中添加对其相应的处理，确保插入和查询操作能够正确处理该字段：
+
+static{}中：
     
     sNotesProjectionMap.put(
     NotePad.Notes.COLUMN_NAME_BACK_COLOR,
@@ -275,7 +252,7 @@ insert中：
     }
 
 
-# 8自定义一个CursorAdapter继承SimpleCursorAdapter，把格式化方法移到这里
+# 8通过继承 SimpleCursorAdapter 自定义了 MyCursorAdapter，重写了 bindView 方法，根据背景颜色设置每行的背景色，把自定义的格式化方法也移过来了
     
     public class MyCursorAdapter extends SimpleCursorAdapter {
 
@@ -336,6 +313,7 @@ insert中：
     NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE, // 2
     NotePad.Notes.COLUMN_NAME_BACK_COLOR,
     };
+
 并且将NotesList中用的SimpleCursorAdapter改使用MyCursorAdapter：
     
     //修改为可以填充颜色的自定义的adapter，自定义的代码在MyCursorAdapter.java中
@@ -357,7 +335,7 @@ insert中：
     NotePad.Notes.COLUMN_NAME_BACK_COLOR
     };
 
-onsume中添加
+onsume中添加，处理颜色显示和保存
    
     switch (colorCode) {
     case NotePad.Notes.DEFAULT_COLOR:
@@ -381,29 +359,29 @@ onsume中添加
     }
     }
 
-# 10.菜单文件添加一个图标
+# 10.添加了一个菜单项用于更改背景颜色
 
                 <item android:id="@+id/menu_color"
         android:title="@string/menu_color"
         android:icon="@drawable/ic_menu_color"
         android:showAsAction="always"/>
 
-        在NoteEditor中找到onOptionsItemSelected()方法，在菜单的switch中添加：
+在 onOptionsItemSelected() 中处理该菜单项点击事件，跳转到一个新的 NoteColorActivity，在这个 Activity 中用户可以选择背景颜色：
     
     //换背景颜色选项
     case R.id.menu_color:
     changeColor();
     break;
-    在NoteEditor中添加函数changeColor()：
-    
-    //跳转改变颜色的activity，将uri信息传到新的activity
+
+在NoteEditor中添加函数changeColor()：
+
     private final void changeColor() {
     Intent intent = new Intent(null,mUri);
     intent.setClass(NoteEditor.this,NoteColor.class);
     NoteEditor.this.startActivity(intent);
     }
 
-新建布局note_color.xml
+## 11新建布局note_color.xml
     
     <?xml version="1.0" encoding="utf-8"?>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -446,7 +424,7 @@ onsume中添加
     android:onClick="red"/>
     </LinearLayout>
 
-创建NoteColorActivity
+创建NoteColorActivity 允许用户选择背景颜色，并通过 ContentResolver.update() 更新背景颜色
 
     public class NoteColor extends Activity {
 
@@ -538,13 +516,14 @@ onsume中添加
     android:theme="@android:style/Theme.Holo.Light.Dialog"
     android:label="ChangeColor"
     android:windowSoftInputMode="stateVisible"/>
+
 ![img_9.png](img_9.png)
 
 ![img_8.png](img_8.png)
 
-## 拓展功能2 排序
+# 拓展功能2 排序
 
-# 1在菜单文件list_options_menu.xml中添加：
+## 1在菜单文件list_options_menu.xml中添加：
     
     <item
     android:id="@+id/menu_sort"
@@ -564,7 +543,7 @@ onsume中添加
     </menu>
     </item>
 
-# 2在NotesList菜单switch下添加case：
+## 2 在 NotesList 的 onOptionsItemSelected() 方法中添加排序逻辑：
 
     case R.id.menu_sort1:
     cursor = managedQuery(
@@ -583,6 +562,7 @@ onsume中添加
     );
     setListAdapter(adapter);
     return true;
+
     //修改时间排序
     case R.id.menu_sort2:
     cursor = managedQuery(
@@ -601,6 +581,7 @@ onsume中添加
     );
     setListAdapter(adapter);
     return true;
+
     //颜色排序
     case R.id.menu_sort3:
     cursor = managedQuery(
@@ -620,7 +601,7 @@ onsume中添加
     setListAdapter(adapter);
     return true;
 
-定义
+定义变量 adapter 和 cursor，并指定数据列和视图ID，方便上面使用
 
     private MyCursorAdapter adapter;
     private Cursor cursor;
