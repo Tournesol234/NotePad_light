@@ -609,13 +609,17 @@ onsume中添加，处理颜色显示和保存
     private int[] viewIDs = { R.id.tv_title , R.id.tv_date };
 
 样式
+
 ![img_1.png](img_1.png)
 
 按创建时间排序
+
 ![img_2.png](img_2.png)
 
 修改时间
+
 ![img_3.png](img_3.png)
 
 颜色
+
 ![img_4.png](img_4.png)
