@@ -918,9 +918,10 @@ NoteEditor中初始化分类选择器
 
 笔记编辑页面样式
 
-![img_12.png](img_12.png)
+![image](https://github.com/user-attachments/assets/1a6c4961-db1e-4292-a063-2465fbd7551d)
 
-![img_13.png](img_13.png)
+![image](https://github.com/user-attachments/assets/10f40e0f-b099-408f-a530-cb5c3f8e9e60)
+
 
 主页面样式
 
