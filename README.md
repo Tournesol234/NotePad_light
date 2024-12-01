@@ -625,6 +625,11 @@ onsume中添加，处理颜色显示和保存
 ![img_4.png](img_4.png)
 
 
+分类
+
+![img_21.png](img_21.png)
+
+
 # 拓展功能3 分类
 
 # 1.添加分类
@@ -702,13 +707,19 @@ list_context_menu.xml中添加
 
 在notelist_item.xml 增加分类图标的 ImageView
 
-    <ImageView
-    android:id="@+id/iv_category"
-    android:layout_width="wrap_content"
+    <LinearLayout
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_alignParentRight="true"
-    android:layout_marginRight="10dp"
-    android:src="@drawable/ic_category_task" />
+    android:orientation="horizontal"
+    android:gravity="end"
+    android:paddingRight="10dp">
+
+        <ImageView
+            android:id="@+id/iv_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_category_task" />
+    </LinearLayout>
 
 Notelist onContextItemSelected 处理分类点击
 
@@ -910,10 +921,10 @@ NoteEditor中初始化分类选择器
 
 主页面样式
 
-![img_14.png](img_14.png)
+![img_18.png](img_18.png)
 
-![img_15.png](img_15.png)
+![img_19.png](img_19.png)
 
 分类
 
-![img_17.png](img_17.png)
+![img_20.png](img_20.png)

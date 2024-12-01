@@ -19,19 +19,23 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="0dp">
+
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-<TextView
-    android:id="@+id/tv_title"
-    android:layout_width="match_parent"
-    android:layout_height="?android:attr/listPreferredItemHeight"
-    android:textAppearance="?android:attr/textAppearanceLarge"
-    android:gravity="center_vertical"
-    android:paddingLeft="5dip"
-    android:singleLine="true"
-/>
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:gravity="center_vertical"
+        android:paddingLeft="5dp"
+        android:singleLine="true"
+        />
+
     <TextView
         android:id="@+id/tv_date"
         android:layout_width="wrap_content"
@@ -41,12 +45,18 @@
         android:layout_marginBottom="16dp"
         />
 
-    <ImageView
-        android:id="@+id/iv_category"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="10dp"
-        android:src="@drawable/ic_category_task" />
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:paddingRight="10dp">
+
+        <ImageView
+            android:id="@+id/iv_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_category_task" />
+    </LinearLayout>
 
 </LinearLayout>
