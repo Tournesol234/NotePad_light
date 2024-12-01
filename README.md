@@ -676,8 +676,16 @@ NoteEditor PROJECTION 添加分类
     
     // 插入默认分类
     getContentResolver().update(mUri, values, null, null);
-                    
 
+NotePadProvider新增笔记分类列及索引
+
+    private static final String[] READ_NOTE_PROJECTION = new String[] {
+            NotePad.Notes._ID,               // 投影位置 0，笔记的 ID
+            NotePad.Notes.COLUMN_NAME_NOTE,  // 投影位置 1，笔记的内容
+            NotePad.Notes.COLUMN_NAME_TITLE, // 投影位置 2，笔记的标题
+            NotePad.Notes.COLUMN_NAME_CATEGORY // 新增 category 列
+    };
+    private static final int READ_NOTE_CATEGORY_INDEX = 3; // 对应 category 的索引
 # 3添加分类菜单
 
 list_context_menu.xml中添加
@@ -779,7 +787,80 @@ NotePadProvider添加
             }
         }
 
-# 5设置排序
+# 5布局文件添加分类选择器
+note_editor.xml中
+ <!-- 分类选择器 -->
+    <Spinner
+        android:id="@+id/spinner_category"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+string.xml中加入
+
+    <string-array name="categories_array">
+    <item>学习</item>
+    <item>生活</item>
+    <item>任务</item>
+    </string-array>
+
+NoteEditor中初始化分类选择器
+
+    // 获取 Spinner 控件
+    Spinner categorySpinner = findViewById(R.id.spinner_category);
+    
+    // 创建适配器，将分类项加载到 Spinner 中
+    ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+    R.array.note_categories, android.R.layout.simple_spinner_item);
+    
+    // 设置下拉项样式
+    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+    
+    // 将适配器设置到 Spinner
+    categorySpinner.setAdapter(adapter);
+
+    // 绑定分类选择，恢复用户的选择
+    if (mState == STATE_EDIT) {
+    int position = getCategoryPositionFromDatabase(mUri);
+    categorySpinner.setSelection(position);
+    }
+
+添加根据用户分类获取对应位置的方法
+
+    // 根据数据库中的分类获取对应的位置
+    private int getCategoryPositionFromDatabase(Uri noteUri) {
+        Cursor cursor = getContentResolver().query(noteUri,
+                new String[]{NotePad.Notes.COLUMN_NAME_CATEGORY}, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            String category = cursor.getString(cursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_CATEGORY));
+            cursor.close();
+            // 将分类转换为 Spinner 的位置
+            if ("学习".equals(category)) {
+                return 0;
+            } else if ("生活".equals(category)) {
+                return 1;
+            } else {
+                return 2;  // 默认 "任务"
+            }
+        }
+        return 2;  // 默认返回 "任务" 分类
+    }
+
+在 onResume 中加载分类信息
+
+            // 加载分类信息并设置到 Spinner
+                int categoryIndex = mCursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_CATEGORY);
+                if (categoryIndex != -1) {
+                    String category = mCursor.getString(categoryIndex);
+                    Spinner categorySpinner = (Spinner) findViewById(R.id.spinner_category);
+
+                    // 查找分类的索引并设置 Spinner
+                    ArrayAdapter<CharSequence> adapter = (ArrayAdapter<CharSequence>) categorySpinner.getAdapter();
+                    int position = adapter.getPosition(category);
+                    categorySpinner.setSelection(position);
+                }
+
+在 onSaveInstanceState 中保存分类
+# 6设置排序
 
 在 list_options_menu.xml 中添加分类排序菜单项：
 
@@ -810,4 +891,18 @@ NotePadProvider添加
      return true;
 
 
-![img_11.png](img_11.png)
+笔记编辑页面样式
+
+![img_12.png](img_12.png)
+
+![img_13.png](img_13.png)
+
+主页面样式
+
+![img_14.png](img_14.png)
+
+![img_15.png](img_15.png)
+
+分类
+
+![img_16.png](img_16.png)

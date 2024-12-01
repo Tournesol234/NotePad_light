@@ -47,10 +47,18 @@
     <string name="menu_sort1">创建时间</string>
     <string name="menu_sort2">修改时间</string>
     <string name="menu_sort3">颜色</string>
-    <string name="menu_category_study">学习\n</string>
-    <string name="menu_category_life">生活\n</string>
-    <string name="menu_category_task">任务</string>
-    <string name="menu_sort4">分类\n</string>
+
+        <string name="menu_sort4">分类\n</string>
+        <string name="menu_category_study">学习</string>
+        <string name="menu_category_life">生活</string>
+        <string name="menu_category_task">任务</string>
+
+        <string-array name="categories_array">
+            <item>学习</item>
+            <item>生活</item>
+            <item>任务</item>
+        </string-array>
+
 
     <color name="colorPrimary">#03A9F4</color>
     <color name="colorBackground">#FFFFFF</color>

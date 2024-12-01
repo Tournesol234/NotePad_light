@@ -82,13 +82,16 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
     /**
      * 标准投影，用于选择普通笔记的有趣列。
      */
-    private static final String[] READ_NOTE_PROJECTION = new String[]{
+    private static final String[] READ_NOTE_PROJECTION = new String[] {
             NotePad.Notes._ID,               // 投影位置 0，笔记的 ID
             NotePad.Notes.COLUMN_NAME_NOTE,  // 投影位置 1，笔记的内容
             NotePad.Notes.COLUMN_NAME_TITLE, // 投影位置 2，笔记的标题
+            NotePad.Notes.COLUMN_NAME_CATEGORY // 新增 category 列
     };
+
     private static final int READ_NOTE_NOTE_INDEX = 1;
     private static final int READ_NOTE_TITLE_INDEX = 2;
+    private static final int READ_NOTE_CATEGORY_INDEX = 3; // 对应 category 的索引
 
     /*
      * 根据传入 URI 的模式通过 Uri 匹配器选择操作的常量
@@ -114,68 +117,32 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
      * A block that instantiates and sets static objects
      */
     static {
-
-        /*
-         * 创建并初始化 URI 匹配器
-         */
-        // 创建一个新的实例
+        // 创建并初始化 URI 匹配器
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-
-        // 添加一个模式，将以 "notes" 结尾的 URI 定向到 NOTES 操作
+        // 添加匹配模式
         sUriMatcher.addURI(NotePad.AUTHORITY, "notes", NOTES);
-
-        // 添加一个模式，将以 "notes" 加一个整数结尾的 URI 定向到笔记 ID 操作
         sUriMatcher.addURI(NotePad.AUTHORITY, "notes/#", NOTE_ID);
-
-        // 添加一个模式，将以 live_folders/notes 结尾的 URI 定向到
-        // 实时文件夹操作
         sUriMatcher.addURI(NotePad.AUTHORITY, "live_folders/notes", LIVE_FOLDER_NOTES);
 
         /*
-         * 创建并初始化一个投影映射，返回所有列
+         * 初始化 sNotesProjectionMap，映射数据库列与URI字段
          */
-
-        // 创建一个新的投影映射实例。映射在给定字符串的情况下返回列名。
-        // 这两者通常是相等的。
         sNotesProjectionMap = new HashMap<String, String>();
-
-        // 将字符串 "_ID" 映射到列名 "_ID"
         sNotesProjectionMap.put(NotePad.Notes._ID, NotePad.Notes._ID);
-
-        // 将 "title" 映射到 "title"
         sNotesProjectionMap.put(NotePad.Notes.COLUMN_NAME_TITLE, NotePad.Notes.COLUMN_NAME_TITLE);
-
-        // 将 "note" 映射到 "note"
         sNotesProjectionMap.put(NotePad.Notes.COLUMN_NAME_NOTE, NotePad.Notes.COLUMN_NAME_NOTE);
-
-        // 将 "created" 映射到 "created"
-        sNotesProjectionMap.put(NotePad.Notes.COLUMN_NAME_CREATE_DATE,
-                NotePad.Notes.COLUMN_NAME_CREATE_DATE);
-
-        // 将 "modified" 映射到 "modified"
-        sNotesProjectionMap.put(
-                NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE,
-                NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE);
-//颜色
-        sNotesProjectionMap.put(
-                NotePad.Notes.COLUMN_NAME_BACK_COLOR,
-                NotePad.Notes.COLUMN_NAME_BACK_COLOR);
+        sNotesProjectionMap.put(NotePad.Notes.COLUMN_NAME_CREATE_DATE, NotePad.Notes.COLUMN_NAME_CREATE_DATE);
+        sNotesProjectionMap.put(NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE, NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE);
+        sNotesProjectionMap.put(NotePad.Notes.COLUMN_NAME_BACK_COLOR, NotePad.Notes.COLUMN_NAME_BACK_COLOR);
+        sNotesProjectionMap.put(NotePad.Notes.COLUMN_NAME_CATEGORY, NotePad.Notes.COLUMN_NAME_CATEGORY);  // 添加 category 映射
 
         /*
-         * 创建并初始化一个用于处理实时文件夹的投影映射
+         * 初始化 sLiveFolderProjectionMap，映射实时文件夹所需的列
          */
-
-        // 创建一个新的投影映射实例
         sLiveFolderProjectionMap = new HashMap<String, String>();
-
-        // 将 "_ID" 映射到 "_ID AS _ID"，用于实时文件夹
         sLiveFolderProjectionMap.put(LiveFolders._ID, NotePad.Notes._ID + " AS " + LiveFolders._ID);
-
-        // 将 "NAME" 映射到 "title AS NAME"
-        sLiveFolderProjectionMap.put(LiveFolders.NAME, NotePad.Notes.COLUMN_NAME_TITLE + " AS " +
-                LiveFolders.NAME);
+        sLiveFolderProjectionMap.put(LiveFolders.NAME, NotePad.Notes.COLUMN_NAME_TITLE + " AS " + LiveFolders.NAME);
     }
-
 
     /**
      * 该类用于打开、创建和升级数据库文件。为了测试目的，设置为包可见。

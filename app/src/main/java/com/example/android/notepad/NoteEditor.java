@@ -37,7 +37,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 
 /**
  * 这个活动处理“编辑”笔记，其中编辑是响应
@@ -144,115 +146,102 @@ public class NoteEditor extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        /*
-         * Creates an Intent to use when the Activity object's result is sent back to the
-         * caller.
-         */
+        // 获取 Intent 对象
         final Intent intent = getIntent();
 
-        /*
-         *  Sets up for the edit, based on the action specified for the incoming Intent.
-         */
-
-        // Gets the action that triggered the intent filter for this Activity
+        // 获取触发该 Activity 的 Action
         final String action = intent.getAction();
 
-        // For an edit action:
-        if (Intent.ACTION_EDIT.equals(action)) {
+        // 设置布局文件
+        setContentView(R.layout.note_editor);
 
-            // Sets the Activity state to EDIT, and gets the URI for the data to be edited.
+// 获取 Spinner 视图
+        Spinner categorySpinner = (Spinner) findViewById(R.id.spinner_category);
+
+// 创建 ArrayAdapter，加载字符串数组
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this,                  // 当前上下文
+                R.array.categories_array, // 引用 string-array 中的数组
+                android.R.layout.simple_spinner_item // 使用简单的布局显示每个项
+        );
+
+// 设置下拉列表的样式
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+// 设置适配器给 Spinner
+        categorySpinner.setAdapter(adapter);
+
+
+        // 获取笔记内容
+        mText = (EditText) findViewById(R.id.note);
+
+        // 获取 URI 和状态，准备进行插入或编辑
+        if (Intent.ACTION_EDIT.equals(action)) {
             mState = STATE_EDIT;
             mUri = intent.getData();
-
-            // For an insert or paste action:
-        } else if (Intent.ACTION_INSERT.equals(action)
-                || Intent.ACTION_PASTE.equals(action)) {
-
-            // Sets the Activity state to INSERT, gets the general note URI, and inserts an
-            // empty record in the provider
+        } else if (Intent.ACTION_INSERT.equals(action) || Intent.ACTION_PASTE.equals(action)) {
             mState = STATE_INSERT;
             mUri = getContentResolver().insert(intent.getData(), null);
 
-            /*
-             * If the attempt to insert the new note fails, shuts down this Activity. The
-             * originating Activity receives back RESULT_CANCELED if it requested a result.
-             * Logs that the insert failed.
-             */
+            // 插入失败时关闭 Activity
             if (mUri == null) {
-
-                // Writes the log identifier, a message, and the URI that failed.
                 Log.e(TAG, "Failed to insert new note into " + getIntent().getData());
-
-                // Closes the activity.
                 finish();
                 return;
             }
 
             // 设置默认分类为 "task"
             ContentValues values = new ContentValues();
-            values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, NotePad.Notes.CATEGORY_TASK); // 默认分类为任务
-
-            // 插入默认分类
+            values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, NotePad.Notes.CATEGORY_TASK);  // 默认分类为任务
             getContentResolver().update(mUri, values, null, null);
 
-            // Since the new entry was created, this sets the result to be returned
-            // set the result to be returned.
             setResult(RESULT_OK, (new Intent()).setAction(mUri.toString()));
-
-        // If the action was other than EDIT or INSERT:
-        } else {
-
-            // Logs an error that the action was not understood, finishes the Activity, and
-            // returns RESULT_CANCELED to an originating Activity.
-            Log.e(TAG, "Unknown action, exiting");
-            finish();
-            return;
         }
 
-        /*
-         * Using the URI passed in with the triggering Intent, gets the note or notes in
-         * the provider.
-         * Note: This is being done on the UI thread. It will block the thread until the query
-         * completes. In a sample app, going against a simple provider based on a local database,
-         * the block will be momentary, but in a real app you should use
-         * android.content.AsyncQueryHandler or android.os.AsyncTask.
-         */
+        // 加载笔记内容
         mCursor = managedQuery(
-            mUri,         // The URI that gets multiple notes from the provider.
-            PROJECTION,   // A projection that returns the note ID and note content for each note.
-            null,         // No "where" clause selection criteria.
-            null,         // No "where" clause selection values.
-            null          // Use the default sort order (modification date, descending)
+                mUri,
+                PROJECTION,
+                null,
+                null,
+                null
         );
 
-        // For a paste, initializes the data from clipboard.
-        // (Must be done after mCursor is initialized.)
-        if (Intent.ACTION_PASTE.equals(action)) {
-            // Does the paste
-            performPaste();
-            // Switches the state to EDIT so the title can be modified.
-            mState = STATE_EDIT;
-        }
-
-        // Sets the layout for this Activity. See res/layout/note_editor.xml
-        setContentView(R.layout.note_editor);
-
-        // Gets a handle to the EditText in the the layout.
-        mText = (EditText) findViewById(R.id.note);
-
-        /*
-         * If this Activity had stopped previously, its state was written the ORIGINAL_CONTENT
-         * location in the saved Instance state. This gets the state.
-         */
-        // If it's a paste operation, handle the paste action
+        // 如果是粘贴操作，执行粘贴功能
         if (Intent.ACTION_PASTE.equals(action)) {
             performPaste();
             mState = STATE_EDIT;
         }
 
+        // 处理保存的原始内容
         if (savedInstanceState != null) {
             mOriginalContent = savedInstanceState.getString(ORIGINAL_CONTENT);
         }
+
+        // 绑定分类选择，恢复用户的选择
+        if (mState == STATE_EDIT) {
+            int position = getCategoryPositionFromDatabase(mUri);
+            categorySpinner.setSelection(position);
+        }
+    }
+
+    // 根据数据库中的分类获取对应的位置
+    private int getCategoryPositionFromDatabase(Uri noteUri) {
+        Cursor cursor = getContentResolver().query(noteUri,
+                new String[]{NotePad.Notes.COLUMN_NAME_CATEGORY}, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            String category = cursor.getString(cursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_CATEGORY));
+            cursor.close();
+
+            if ("学习".equals(category)) {
+                return 0;
+            } else if ("生活".equals(category)) {
+                return 1;
+            } else {
+                return 2;
+            }
+        }
+        return 2;
     }
 
     /**
@@ -324,6 +313,18 @@ public class NoteEditor extends Activity {
                     }
                 }
 
+                // 加载分类信息并设置到 Spinner
+                int categoryIndex = mCursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_CATEGORY);
+                if (categoryIndex != -1) {
+                    String category = mCursor.getString(categoryIndex);
+                    Spinner categorySpinner = (Spinner) findViewById(R.id.spinner_category);
+
+                    // 查找分类的索引并设置 Spinner
+                    ArrayAdapter<CharSequence> adapter = (ArrayAdapter<CharSequence>) categorySpinner.getAdapter();
+                    int position = adapter.getPosition(category);
+                    categorySpinner.setSelection(position);
+                }
+
             } else {
                 // 如果没有数据，则设置错误信息
                 setTitle(getText(R.string.error_title));
@@ -335,6 +336,7 @@ public class NoteEditor extends Activity {
             mText.setText(getText(R.string.error_message));
         }
     }
+
 
     /**
      * This method is called when an Activity loses focus during its normal operation, and is then
@@ -391,9 +393,21 @@ public class NoteEditor extends Activity {
                     updateNote(text, text);  // 插入新笔记
                     mState = STATE_EDIT;  // 切换为编辑状态
                 }
+
+                // 保存用户选择的分类
+                Spinner categorySpinner = (Spinner) findViewById(R.id.spinner_category);
+                String selectedCategory = categorySpinner.getSelectedItem().toString();
+
+                // 更新数据库中的分类
+                ContentValues values = new ContentValues();
+                values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, selectedCategory);  // 设置用户选择的分类
+
+                // 更新笔记的分类
+                getContentResolver().update(mUri, values, null, null);
             }
         }
     }
+
 
     /**
      * This method is called when the user clicks the device's Menu button the first time for
