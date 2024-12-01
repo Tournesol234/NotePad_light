@@ -24,6 +24,7 @@ import android.content.ClipboardManager;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -82,6 +83,7 @@ public class NotesList extends ListActivity {
             //扩展 显示时间 颜色
             NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE, // 2
             NotePad.Notes.COLUMN_NAME_BACK_COLOR,
+            NotePad.Notes.COLUMN_NAME_CATEGORY
     };
 
     /**
@@ -151,17 +153,7 @@ public class NotesList extends ListActivity {
         //
         int[] viewIDs = {R.id.tv_title,R.id.tv_date};
 
-//        // 为 ListView 创建基础适配器。
-//        SimpleCursorAdapter adapter
-//                = new SimpleCursorAdapter(
-//                this,                             // ListView 的上下文
-//                R.layout.noteslist_item,          // 指向列表项的 XML 文件
-//                cursor,                           // 用于获取项目的光标
-//                dataColumns,
-//                viewIDs
-//        );
 
-        //
       MyCursorAdapter  adapter = new MyCursorAdapter(
                 this,
                 R.layout.noteslist_item,
@@ -471,6 +463,25 @@ public class NotesList extends ListActivity {
                 );
                 setListAdapter(adapter);
                 return true;
+                //分类排序
+            case R.id.menu_sort4:
+                cursor = managedQuery(
+                        getIntent().getData(),
+                        PROJECTION,
+                        null,
+                        null,
+                        NotePad.Notes.COLUMN_NAME_CATEGORY  // 按分类排序
+                );
+                adapter = new MyCursorAdapter(
+                        this,
+                        R.layout.noteslist_item,
+                        cursor,
+                        dataColumns,
+                        viewIDs
+                );
+                setListAdapter(adapter);
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -569,67 +580,88 @@ public class NotesList extends ListActivity {
         // 获取菜单项的数据。
         AdapterView.AdapterContextMenuInfo info;
 
-        /*
-         * 获取菜单项的额外信息。当在 Notes 列表中长按某个笔记时，会显示上下文菜单。
-         * 菜单项自动获取与长按笔记相关联的数据。这些数据来自支持列表的提供者。
-         *
-         * 笔记的数据会通过 ContextMenuInfo 对象传递到上下文菜单创建方法中。
-         *
-         * 当点击其中一个上下文菜单项时，相同的数据以及笔记 ID 会通过 item 参数传递到 onContextItemSelected() 方法中。
-         */
         try {
-            // 将菜单项的数据对象转换为适用于 AdapterView 对象的类型。
             info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         } catch (ClassCastException e) {
-            // 如果对象无法转换，记录错误。
             Log.e(TAG, "bad menuInfo", e);
-
-            // 触发默认处理菜单项的操作。
             return false;
         }
 
-        // 将选中的笔记 ID 附加到传入 Intent 的 URI 中。
-        Uri noteUri = ContentUris.withAppendedId(getIntent().getData(), info.id);
+        // 获取笔记 ID
+        long noteId = info.id;  // 这里从 AdapterContextMenuInfo 中获取 ID
 
-        /*
-         * 获取菜单项的 ID 并与已知的操作进行比较。
-         */
+        Uri noteUri = ContentUris.withAppendedId(getIntent().getData(), noteId);
+
         switch (item.getItemId()) {
             case R.id.context_open:
                 // 启动活动以查看/编辑当前选中的项
                 startActivity(new Intent(Intent.ACTION_EDIT, noteUri));
                 return true;
-//BEGIN_INCLUDE(copy)
             case R.id.context_copy:
                 // 获取剪贴板服务的句柄。
                 ClipboardManager clipboard = (ClipboardManager)
                         getSystemService(Context.CLIPBOARD_SERVICE);
 
-                // 将笔记的 URI 复制到剪贴板。实际上，这会复制笔记本身。
-                clipboard.setPrimaryClip(ClipData.newUri(   // 新的剪贴板项目，保存 URI
-                        getContentResolver(),               // 用于获取 URI 信息的解析器
-                        "Note",                             // 剪贴板项的标签
-                        noteUri)                            // URI
-                );
+                // 将笔记的 URI 复制到剪贴板。
+                clipboard.setPrimaryClip(ClipData.newUri(
+                        getContentResolver(),
+                        "Note",
+                        noteUri));
 
-                // 返回给调用者并跳过进一步处理。
                 return true;
-//END_INCLUDE(copy)
             case R.id.context_delete:
-
-                // 从提供者中删除笔记，传递一个笔记 ID 格式的 URI。
-                // 请参阅开头的说明，关于在 UI 线程上执行提供者操作。
+                // 从提供者中删除笔记
                 getContentResolver().delete(
-                        noteUri,  // 提供者的 URI
-                        null,     // 不需要 WHERE 子句，因为只传递单个笔记 ID
-                        null      // 没有 WHERE 子句，因此不需要 WHERE 参数
-                );
+                        noteUri,
+                        null,
+                        null);
 
-                // 返回给调用者并跳过进一步处理。
+                return true;
+            case R.id.menu_category_study:
+                // 更新分类为“学习”
+                updateCategory(noteId, "学习");
+                return true;
+            case R.id.menu_category_life:
+                // 更新分类为“生活”
+                updateCategory(noteId, "生活");
+                return true;
+            case R.id.menu_category_task:
+                // 更新分类为“任务”
+                updateCategory(noteId, "任务");
                 return true;
             default:
                 return super.onContextItemSelected(item);
         }
+    }
+
+    // 更新笔记的分类
+    private void updateCategory(long noteId, String category) {
+        // 准备更新数据
+        ContentValues values = new ContentValues();
+        values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, category);  // 更新分类字段
+
+        // 执行更新操作
+        getContentResolver().update(
+                ContentUris.withAppendedId(NotePad.Notes.CONTENT_URI, noteId),
+                values,
+                null,
+                null);
+
+        // 更新完分类后，刷新笔记列表
+        refreshNoteList();
+    }
+
+    private void refreshNoteList() {
+        // 重新查询并更新适配器
+        Cursor cursor = getContentResolver().query(
+                NotePad.Notes.CONTENT_URI,
+                null,
+                null,
+                null,
+                null);
+
+        // 假设你在使用 CursorAdapter
+        adapter.changeCursor(cursor);
     }
 
     /**

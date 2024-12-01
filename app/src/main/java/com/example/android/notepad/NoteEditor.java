@@ -58,13 +58,15 @@ public class NoteEditor extends Activity {
     /*
      * Creates a projection that returns the note ID and the note contents.
      */
-    private static final String[] PROJECTION =
-            new String[] {
-                    NotePad.Notes._ID,
-                    NotePad.Notes.COLUMN_NAME_TITLE,
-                    NotePad.Notes.COLUMN_NAME_NOTE,
-                    NotePad.Notes.COLUMN_NAME_BACK_COLOR
-            };
+    private static final String[] PROJECTION = new String[] {
+            NotePad.Notes._ID,
+            NotePad.Notes.COLUMN_NAME_TITLE,
+            NotePad.Notes.COLUMN_NAME_NOTE,
+            NotePad.Notes.COLUMN_NAME_BACK_COLOR,
+            NotePad.Notes.COLUMN_NAME_CATEGORY // 添加分类字段
+    };
+
+
 
     // A label for the saved state of the activity
     private static final String ORIGINAL_CONTENT = "origContent";
@@ -186,6 +188,13 @@ public class NoteEditor extends Activity {
                 return;
             }
 
+            // 设置默认分类为 "task"
+            ContentValues values = new ContentValues();
+            values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, NotePad.Notes.CATEGORY_TASK); // 默认分类为任务
+
+            // 插入默认分类
+            getContentResolver().update(mUri, values, null, null);
+
             // Since the new entry was created, this sets the result to be returned
             // set the result to be returned.
             setResult(RESULT_OK, (new Intent()).setAction(mUri.toString()));
@@ -235,6 +244,12 @@ public class NoteEditor extends Activity {
          * If this Activity had stopped previously, its state was written the ORIGINAL_CONTENT
          * location in the saved Instance state. This gets the state.
          */
+        // If it's a paste operation, handle the paste action
+        if (Intent.ACTION_PASTE.equals(action)) {
+            performPaste();
+            mState = STATE_EDIT;
+        }
+
         if (savedInstanceState != null) {
             mOriginalContent = savedInstanceState.getString(ORIGINAL_CONTENT);
         }

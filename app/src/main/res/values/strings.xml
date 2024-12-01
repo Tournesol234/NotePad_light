@@ -47,6 +47,10 @@
     <string name="menu_sort1">创建时间</string>
     <string name="menu_sort2">修改时间</string>
     <string name="menu_sort3">颜色</string>
+    <string name="menu_category_study">学习\n</string>
+    <string name="menu_category_life">生活\n</string>
+    <string name="menu_category_task">任务</string>
+    <string name="menu_sort4">分类\n</string>
 
     <color name="colorPrimary">#03A9F4</color>
     <color name="colorBackground">#FFFFFF</color>

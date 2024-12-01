@@ -170,5 +170,15 @@ public final class NotePad {
         public static final int BLUE_COLOR = 2;
         public static final int GREEN_COLOR = 3;
         public static final int RED_COLOR = 4;
+
+        // 分类字段
+        public static final String COLUMN_NAME_CATEGORY = "category";
+
+        public static final String CATEGORY_STUDY = "study";   // 学习
+        public static final String CATEGORY_LIFE = "life";     // 生活
+        public static final String CATEGORY_TASK = "task";     // 任务
+
     }
+
+
 }

@@ -623,3 +623,191 @@ onsume中添加，处理颜色显示和保存
 颜色
 
 ![img_4.png](img_4.png)
+
+
+# 拓展功能3 分类
+
+# 1.添加分类
+
+在 NotePad 的契约类中，添加分类字段：
+
+`  public static final String COLUMN_NAME_CATEGORY = "category";`
+
+定义分类
+
+    public static final String CATEGORY_STUDY = "study";   // 学习
+    public static final String CATEGORY_LIFE = "life";     // 生活
+    public static final String CATEGORY_TASK = "task";     // 任务
+
+在provider onCreate 中创建数据库表时，添加分类字段：
+
+    `
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+    db.execSQL("CREATE TABLE " + NotePad.Notes.TABLE_NAME + "   ("
+    + NotePad.Notes._ID + " INTEGER PRIMARY KEY,"
+      + NotePad.Notes.COLUMN_NAME_TITLE + " TEXT,"
+      + NotePad.Notes.COLUMN_NAME_NOTE + " TEXT,"
+      + NotePad.Notes.COLUMN_NAME_CREATE_DATE + " INTEGER,"
+      + NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE + " INTEGER,"
+      + NotePad.Notes.COLUMN_NAME_BACK_COLOR + " INTEGER,"
+      + NotePad.Notes.COLUMN_NAME_CATEGORY + " TEXT" // 新增分类字段
+      + ");");
+      }
+      `
+# 2 修改插入内容时，包含分类字段
+
+NoteEditor PROJECTION 添加分类
+
+    private static final String[] PROJECTION =
+    new String[] {
+    NotePad.Notes._ID,
+    NotePad.Notes.COLUMN_NAME_TITLE,
+    NotePad.Notes.COLUMN_NAME_NOTE,
+    NotePad.Notes.COLUMN_NAME_BACK_COLOR,
+    NotePad.Notes.COLUMN_NAME_CATEGORY // 添加分类字段
+    };
+
+ OnCreate添加下面代码，确保每次插入都包含分类信息，在插入笔记时读取用户选择的分类，并将其存入 ContentValues 中
+ 
+    // 设置默认分类为 "task"
+     ContentValues values = new ContentValues();
+     values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, NotePad.Notes.CATEGORY_TASK); // 默认分类为任务
+    
+    // 插入默认分类
+    getContentResolver().update(mUri, values, null, null);
+                    
+
+# 3添加分类菜单
+
+list_context_menu.xml中添加
+
+    <item android:id="@+id/menu_category_study"
+          android:title="@string/menu_category_study"
+          android:icon="@drawable/ic_category_study"/>
+    <item android:id="@+id/menu_category_life"
+          android:title="@string/menu_category_life"
+          android:icon="@drawable/ic_category_life"/>
+    <item android:id="@+id/menu_category_task"
+          android:title="@string/menu_category_task"
+          android:icon="@drawable/ic_category_task"/>
+
+在notelist_item.xml 增加分类图标的 ImageView
+
+    <ImageView
+    android:id="@+id/iv_category"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentRight="true"
+    android:layout_marginRight="10dp"
+    android:src="@drawable/ic_category_task" />
+
+Notelist onContextItemSelected 处理分类点击
+
+    long noteId = info.id;
+
+    switch (item.getItemId()) {
+    case R.id.menu_category_study:
+    updateCategory(noteId, "学习");
+    return true;
+    case R.id.menu_category_life:
+    updateCategory(noteId, "生活");
+    return true;
+    case R.id.menu_category_task:
+    updateCategory(noteId, "任务");
+    return true;
+
+ 更新笔记分类的方法
+    
+    // 更新笔记的分类
+    private void updateCategory(long noteId, String category) {
+    // 准备更新数据
+    ContentValues values = new ContentValues();
+    values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, category);  // 更新分类字段
+
+    // 执行更新操作
+    getContentResolver().update(
+            ContentUris.withAppendedId(NotePad.Notes.CONTENT_URI, noteId), 
+            values, 
+            null, 
+            null);
+
+    // 更新完分类后，刷新笔记列表
+    refreshNoteList();
+    }
+
+刷新列表，更新数据
+
+    private void refreshNoteList() {
+    // 重新查询并更新适配器
+    Cursor cursor = getContentResolver().query(
+    NotePad.Notes.CONTENT_URI,
+    null,
+    null,
+    null,
+    null);
+
+    // 假设你在使用 CursorAdapter
+    adapter.changeCursor(cursor);
+    }
+
+NotePadProvider添加
+    
+    // 如果值映射中不包含分类，则将其设置为默认分类（任务）。
+    if (values.containsKey(NotePad.Notes.COLUMN_NAME_CATEGORY) == false) {
+    values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, NotePad.Notes.CATEGORY_TASK);  // 默认分类为 "任务"
+    }
+# 4 MyCursorAdapter添加分类图标
+        // 设置分类图标
+        String category = cursor.getString(cursor.getColumnIndex(NotePad.Notes.COLUMN_NAME_CATEGORY));
+        ImageView categoryIcon = (ImageView) view.findViewById(R.id.iv_category);  
+
+        if (category != null) {
+            switch (category) {
+                case "学习":
+                    categoryIcon.setImageResource(R.drawable.ic_category_study);  // 替换成你自己的图标资源
+                    break;
+                case "生活":
+                    categoryIcon.setImageResource(R.drawable.ic_category_life);   // 替换成你自己的图标资源
+                    break;
+                case "任务":
+                    categoryIcon.setImageResource(R.drawable.ic_category_task);  // 替换成你自己的图标资源
+                    break;
+                default:
+                    categoryIcon.setImageResource(R.drawable.ic_category_task);  // 默认图标
+                    break;
+            }
+        }
+
+# 5设置排序
+
+在 list_options_menu.xml 中添加分类排序菜单项：
+
+    <item
+    android:id="@+id/menu_sort4"
+    android:title="@string/menu_sort4"
+    android:icon="@android:drawable/ic_menu_sort_by_size"
+    android:showAsAction="always" />
+
+ 在 NotesList 的 onOptionsItemSelected 中添加排序处理：
+
+     case R.id.menu_sort4:
+     cursor = managedQuery(
+     getIntent().getData(),
+     PROJECTION,
+     null,
+     null,
+     NotePad.Notes.COLUMN_NAME_CATEGORY  // 按分类排序
+     );
+     adapter = new MyCursorAdapter(
+     this,
+     R.layout.noteslist_item,
+     cursor,
+     dataColumns,
+     viewIDs
+     );
+     setListAdapter(adapter);
+     return true;
+
+
+![img_11.png](img_11.png)

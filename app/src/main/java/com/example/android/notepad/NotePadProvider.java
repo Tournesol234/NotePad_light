@@ -199,7 +199,8 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
                     + NotePad.Notes.COLUMN_NAME_NOTE + " TEXT,"
                     + NotePad.Notes.COLUMN_NAME_CREATE_DATE + " INTEGER,"
                     + NotePad.Notes.COLUMN_NAME_MODIFICATION_DATE + " INTEGER,"
-                    + NotePad.Notes.COLUMN_NAME_BACK_COLOR + " INTEGER" //颜色
+                    + NotePad.Notes.COLUMN_NAME_BACK_COLOR + " INTEGER,"
+                    + NotePad.Notes.COLUMN_NAME_CATEGORY + " TEXT" // 新增分类字段
                     + ");");
         }
 
@@ -462,7 +463,6 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
      */
     @Override
     public Uri insert(Uri uri, ContentValues initialValues) {
-
         // 验证传入的 URI。仅允许使用完整的提供者 URI 来执行插入。
         if (sUriMatcher.match(uri) != NOTES) {
             throw new IllegalArgumentException("未知的 URI " + uri);
@@ -481,6 +481,7 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
 
         // 获取当前系统时间（毫秒）
         Long now = Long.valueOf(System.currentTimeMillis());
+
         // 如果值映射中不包含创建日期，则将其设置为当前时间。
         if (values.containsKey(NotePad.Notes.COLUMN_NAME_CREATE_DATE) == false) {
             values.put(NotePad.Notes.COLUMN_NAME_CREATE_DATE, now);
@@ -501,9 +502,15 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
         if (values.containsKey(NotePad.Notes.COLUMN_NAME_NOTE) == false) {
             values.put(NotePad.Notes.COLUMN_NAME_NOTE, "");
         }
-// 背景默认为白色
+
+        // 如果值映射中不包含背景颜色，则将其设置为默认颜色（白色）。
         if (values.containsKey(NotePad.Notes.COLUMN_NAME_BACK_COLOR) == false) {
             values.put(NotePad.Notes.COLUMN_NAME_BACK_COLOR, NotePad.Notes.DEFAULT_COLOR);
+        }
+
+        // 如果值映射中不包含分类，则将其设置为默认分类（任务）。
+        if (values.containsKey(NotePad.Notes.COLUMN_NAME_CATEGORY) == false) {
+            values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, NotePad.Notes.CATEGORY_TASK);  // 默认分类为 "任务"
         }
 
         // 以“写入”模式打开数据库对象。
@@ -513,7 +520,6 @@ public class NotePadProvider extends ContentProvider implements PipeDataWriter<C
         long rowId = db.insert(
                 NotePad.Notes.TABLE_NAME,        // 插入的表格名称
                 NotePad.Notes.COLUMN_NAME_NOTE,  // 一个特殊处理，SQLite 会将该列值设置为 null
-                // 如果 values 为空。
                 values                           // 包含列名和要插入的列值的映射
         );
 

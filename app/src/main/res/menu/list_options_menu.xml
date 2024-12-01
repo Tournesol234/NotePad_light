@@ -42,6 +42,12 @@
             <item
                 android:id="@+id/menu_sort3"
                 android:title="@string/menu_sort3"/>
+            <item
+                android:id="@+id/menu_sort4"
+                android:title="@string/menu_sort4"
+                android:icon="@android:drawable/ic_menu_sort_by_size"
+                android:showAsAction="always" />
+
         </menu>
     </item>
 </menu>

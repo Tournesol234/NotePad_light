@@ -23,7 +23,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.android.notepad" >
 
-
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:icon="@drawable/app_notes"
@@ -72,6 +73,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="vnd.android.cursor.item/vnd.google.note" />
             </intent-filter>
+
 
             <!-- This filter says that we can create a new note inside
                  of a directory of notes.  The INSERT action creates an
