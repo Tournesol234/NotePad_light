@@ -448,11 +448,11 @@ onsume中添加，处理颜色显示和保存
         mUri = getIntent().getData();  // 获取传入的 URI
         // 使用 ContentResolver.query() 替代过时的 managedQuery()
         mCursor = getContentResolver().query(
-                mUri,        // The URI for the note that is to be retrieved.
-                PROJECTION,  // The columns to retrieve
-                null,         // No selection criteria are used
-                null,         // No selection arguments
-                null          // No sort order is needed
+                mUri,        
+                PROJECTION,  
+                null,         
+                null,       
+                null         
         );
 
         if (mCursor != null && mCursor.moveToFirst()) {
@@ -763,7 +763,7 @@ NotePadProvider添加
     
     // 如果值映射中不包含分类，则将其设置为默认分类（任务）。
     if (values.containsKey(NotePad.Notes.COLUMN_NAME_CATEGORY) == false) {
-    values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, NotePad.Notes.CATEGORY_TASK);  // 默认分类为 "任务"
+    values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, NotePad.Notes.CATEGORY_TASK);  
     }
 # 4 MyCursorAdapter添加分类图标
         // 设置分类图标
@@ -773,13 +773,13 @@ NotePadProvider添加
         if (category != null) {
             switch (category) {
                 case "学习":
-                    categoryIcon.setImageResource(R.drawable.ic_category_study);  // 替换成你自己的图标资源
+                    categoryIcon.setImageResource(R.drawable.ic_category_study);  
                     break;
                 case "生活":
-                    categoryIcon.setImageResource(R.drawable.ic_category_life);   // 替换成你自己的图标资源
+                    categoryIcon.setImageResource(R.drawable.ic_category_life);   
                     break;
                 case "任务":
-                    categoryIcon.setImageResource(R.drawable.ic_category_task);  // 替换成你自己的图标资源
+                    categoryIcon.setImageResource(R.drawable.ic_category_task);  
                     break;
                 default:
                     categoryIcon.setImageResource(R.drawable.ic_category_task);  // 默认图标
@@ -859,7 +859,18 @@ NoteEditor中初始化分类选择器
                     categorySpinner.setSelection(position);
                 }
 
-在 onSaveInstanceState 中保存分类
+在 onPause 中保存分类
+
+                // 保存用户选择的分类
+                Spinner categorySpinner = (Spinner) findViewById(R.id.spinner_category);
+                String selectedCategory = categorySpinner.getSelectedItem().toString();
+
+                // 更新数据库中的分类
+                ContentValues values = new ContentValues();
+                values.put(NotePad.Notes.COLUMN_NAME_CATEGORY, selectedCategory);  // 设置用户选择的分类
+
+                // 更新笔记的分类
+                getContentResolver().update(mUri, values, null, null);
 # 6设置排序
 
 在 list_options_menu.xml 中添加分类排序菜单项：
@@ -905,4 +916,4 @@ NoteEditor中初始化分类选择器
 
 分类
 
-![img_16.png](img_16.png)
+![img_17.png](img_17.png)
